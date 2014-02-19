@@ -1,0 +1,5 @@
+;d3_admissions.info
+name = D3_Admissions
+description = Extensible Directory using Taxonomy with Users
+package = D3_Analysis
+core = 7.x

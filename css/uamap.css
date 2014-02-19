@@ -1,0 +1,71 @@
+.state, .states {
+	fill: none;
+	stroke: #000;
+	stroke-width: 1.5px;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+	cursor: pointer;
+}
+path:hover {
+	fill:orange;
+}
+#map, #us-map{
+	border: 1px solid black;
+	max-width: 100%;
+}
+.feeder-true td{
+	font-weight: bold;
+}
+th{
+	background-color: lightblue;
+	border: 1px solid #666;
+	cursor: pointer;
+	padding: 0;
+	margin: 0;
+}
+.state.active {
+  fill: orange;
+}
+.q0-9 { fill:rgb(247,251,255); }
+.q1-9 { fill:rgb(222,235,247); }
+.q2-9 { fill:rgb(198,219,239); }
+.q3-9 { fill:rgb(158,202,225); }
+.q4-9 { fill:rgb(107,174,214); }
+.q5-9 { fill:rgb(66,146,198); }
+.q6-9 { fill:rgb(33,113,181); }
+.q7-9 { fill:rgb(8,81,156); }
+.q8-9 { fill:rgb(8,48,107); }
+
+
+.feeder {
+	fill: green;
+}
+#schools {
+	display: inline;
+	max-width: 100%;
+	font-size: 85%;
+}
+
+#left-column,
+#right-column {
+	display: inline-block;
+	*zoom: 1;
+	*display: inline;
+	vertical-align: top;
+	padding: 0 0 1em;
+}
+#right-column div {
+	border 1px solid black;
+}
+@media screen and (min-width: 62.5em) {
+	#left-column {
+		width: 58%;
+	}
+	#right-column {
+		width: 38%;
+	}
+	#left-column {
+		margin-right: 3%;
+		border-right: 1px dotted #666;
+	}
+}

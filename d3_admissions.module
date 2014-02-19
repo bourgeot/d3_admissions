@@ -1,0 +1,59 @@
+<?php
+
+/*
+ * d3_admissions.module
+ * Bourgeois. November 2013.
+ * Drupal dashboard using d3 to visualize admissions data.
+ * This requires d3.js to be available (d3js.org)
+ * It is a shell module to provide paths for serving data, mostly.
+ */
+
+/* 
+ * Implements hook_menu
+ */
+function d3_admissions_menu() {
+	$items = array(
+		/*'term' => array(
+			'page callback' => 'd3_admissions_fetch_term',
+			'access callback' => true,
+			'delivery callback' => 'drupal_json_output',
+			'file' => 'd3_admissions.inc',
+		),
+		'admissions' => array(
+			'page callback' => 'd3_admissions_fetch',
+			'access callback' => true,
+			'delivery callback' => 'drupal_json_output',
+			'file' => 'd3_admissions.inc',
+		),
+		'exorgs' => array(
+			'page callback' => 'd3_admissions_fetch_exorgs',
+			'access callback' => true,
+			'delivery callback' => 'drupal_json_output',
+			'file' => 'd3_admissions.inc',
+		),
+		'zip-codes' => array(
+			'page callback' => 'd3_admissions_zipcodes',
+			'access callback' => 'user_is_logged_in',
+			'delivery callback' => 'drupal_json_output',
+			'file' => 'd3_admissions.inc',
+		),
+		'vis' => array(
+			'page callback' => 'd3_admissions_visualization',
+			'access callback' => true,
+			'file' => 'd3_admissions.inc',
+		),*/
+		'lab' => array(
+			'page callback' => 'd3testing',
+			'access callback' => 'user_is_logged_in',
+			'file' => 'd3_admissions.inc',
+		),
+	);
+	return $items;
+}
+
+/*
+ * implements hook_info
+ */
+function d3_admissions_info() {
+	return "FN3VaPSsWred5AKu";
+}
