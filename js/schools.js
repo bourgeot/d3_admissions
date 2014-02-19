@@ -1,9 +1,15 @@
 /*
  * This script will show a map of the US with a layer of zip codes for high schools.
  * Clicking on the state will cause a list of high schools that are in that state to appear.
- * By default the list will just be all the high schools in the set sorted by alpha (the first
- * 25 will be shown).
+ * 
+ * Working on performance updates. Split F, T, and R data into three different files. Loading is
+ * user controlled. The ordinal scales are annoying so refactoring the data so terms are in PS format
+ * and converted to dates in the visualization (e.g. 2074 is Fall 2007). updateSchools is clumsy,
+ * so I am changing it to not redo what it has already done.
+ * Functionality to add includes making individual schools a filter option.
  */
+
+ 
  
 //declare some stuff.
 var rootContainer = "#visualization",
@@ -26,7 +32,7 @@ var rootContainer = "#visualization",
 	schoolsByState,
 	schoolsByZip,
 	schoolsByCity,
-	schoolsByName,
+	schoolsByID,
 	schoolCountByState,
 	schoolCountByZip,
 	schoolCountByCity;
@@ -216,11 +222,12 @@ function visualize(population) {
 		schools = crossfilter(data);
 		//define the dimensions
 		schoolsByState = schools.dimension(function(d) { return d.state; });
-		schoolsByName = schools.dimension(function(d) {return d.school;});
+		//schoolsByName = schools.dimension(function(d) {return d.school;});
 		schoolsGroupByState = schoolsByState.group();  //default is identity, so this should return d;
-		schoolsCountByState = schoolsByState.group().reduceCount();
-		schoolsByZip = schools.dimension(function(d) { return d.zip;});
-		schoolsByCity = schools.dimension(function(d) {return d.city;});
+		//schoolsCountByState = schoolsByState.group().reduceCount();
+		//schoolsByZip = schools.dimension(function(d) { return d.zip;});
+		//schoolsByCity = schools.dimension(function(d) {return d.city;});
+		schoolsByID = schools.dimension(function(d) {return d.schoolID;});
 
 		//load the feeder schools and mark them.
 		d3.tsv(dataPath + "ua-feeder-schools.txt", function(error, feeders) {
@@ -474,8 +481,25 @@ function fateReduceRemove(p, v) {
 	}
 	return p;
 }
-
+function buildSchools() {
+	//combine school inventory with fate to get performance measures and locations
+	//in the same set
+	//schoolList is the list.
+	schoolsByID.filter();
+	schoolList = schoolsByID.top(Infinity);
+	//write all the schools to the table.
+}
 function updateSchools() {
+	/*
+	 * Trying this with data joins. the the list of schools by id will always be a superset of the
+	 * fate by id. D3's data joins may work handily here.
+	 */
+	 //fateByState is automatically filtered as a result of how usMap works.
+	 schoolsByState.filter();
+	 schoolsByState.filterRange(usMap.filters());
+	 //update the schools table using enter, update, and exit routines.
+}
+/*function updateSchools() {
 	//school, location, admits, grads, rate
 	//reset the list
 	schoolsTBody.selectAll("tr").remove();
@@ -536,10 +560,10 @@ function updateSchools() {
 			schoolList.push({feeder: d.feeder, school: d.school, location: d.city + ', ' + d.state, admits: a, grads: b,  rate: d3.round(b*100/a,2)});
 		}
 		//froshBySchoolID.filterAll();
-	});*/
+	});
 	sortBy('Admits');
 
-}
+}*/
 function sortBy(d) {
 	/* 
 	 * d is the name of the column. since the column names
