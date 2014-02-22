@@ -27,8 +27,7 @@ var rootContainer = "#visualization",
 	feeders = [],
 	geography = [],
 	stateLabels = [],
-	schoolList = [],
-	allSchools = [],
+	//schoolList = [],
 	schoolsByState,
 	schoolsByZip,
 	schoolsByCity,
@@ -37,7 +36,8 @@ var rootContainer = "#visualization",
 	schoolCountByZip,
 	schoolCountByCity;
 
-var frosh = [],
+var kids,
+	frosh = [],
 	froshByState,
 	froshBySchoolID,
 	froshByAdmitTerm,
@@ -68,7 +68,7 @@ var overlayPieChart,
 var intro = '<h2>UA Incoming Classes from 2007 through 2009: Attendance and Retention Rates for States and Schools</h2>'
 	+ '<h3>(Domestic undergraduates from US Schools, admitted and in attendance; data through Fall 2013)</h3>'
 	+ '<br/><strong>Select a population: </strong><select id="population"><option selected="selected" value="freshmen">Freshmen</option>'
-	+ '<option value="transfers">Transfers/Re-admits</option></select>';
+	+ '<option value="transfers">Transfers</option><option value="readmits">Re-admits</option></select>';
 
 d3.select("#information").append("div").attr("id", "introduction").html(intro);
 d3.select("#population").on('change', function() {
@@ -137,8 +137,8 @@ tr.selectAll("th").data(tColumns)
 			else {
 				return d;
 			}
-		})
-		.on("click", sortBy);
+		});
+		//.on("click", sortBy);
 var schoolsTBody = schoolsTable.append("tbody");	
 
 /****************************
@@ -184,16 +184,16 @@ function visualize(population) {
 	//define the population to use
 	if (population == 'freshmen') {
 		schoolFile = 'us-schools-f.txt';
-		kidFile = 'ua-new-f.txt';
-		//kidFile = 'f-test.txt';
+		//kidFile = 'ua-new-f.txt';
+		kidFile = 'f-test.txt';
 	}
-	else if (population == 'transfer') {
+	else if (population == 'transfers') {
 		schoolFile = 'us-schools-xr.txt';	
-		kidFile = 'ua-new-x.txt';
+		kidFile = 'x-test.txt';
 	}
 	else {
 		schoolFile = 'us-schools-xr.txt';
-		kidFile = 'ua-new-r.txt';
+		kidFile = 'r-test.txt';
 	}
 //define the map section
 	d3.json(dataPath + "us-states.json", function(error, topology) {
@@ -202,9 +202,9 @@ function visualize(population) {
 	/*
 	 * Load the schools after the states have been displayed.
 	 */
-	d3.tsv(dataPath + schoolFile, function(error, data) {
+	d3.tsv(dataPath + schoolFile, function(error, sList) {
 		//map the data
-		data.forEach(function(d) {
+		sList.forEach(function(d) {
 				d.county = d.County_Name;
 				d.latitude = +d.Latitude;
 				d.longitude = +d.Longitude;
@@ -219,10 +219,10 @@ function visualize(population) {
 		/*g.append("g")
 			.attr("id", "schools");		*/
 		
-		schools = crossfilter(data);
+		schools = crossfilter(sList);
 		//define the dimensions
 		schoolsByState = schools.dimension(function(d) { return d.state; });
-		//schoolsByName = schools.dimension(function(d) {return d.school;});
+		schoolsByName = schools.dimension(function(d) {return d.school;});
 		schoolsGroupByState = schoolsByState.group();  //default is identity, so this should return d;
 		//schoolsCountByState = schoolsByState.group().reduceCount();
 		//schoolsByZip = schools.dimension(function(d) { return d.zip;});
@@ -250,29 +250,26 @@ function visualize(population) {
 		});
 
 		//now load the student data.
-		//d3.tsv(dataPath + "ua-frosh.txt", function(error, kids) {
-		d3.tsv(dataPath + kidFile, function(error, kids) {
+		//d3.tsv(dataPath + "ua-frosh.txt", function(error, data) {
+		d3.tsv(dataPath + kidFile, function(error, data) {
 			//mapping
-			kids.forEach(function(d) {
-				d.emplid = d.EMPLID;
-				d.strm = d.STRM;
-				d.gradTerm = d.grad_term;
-				d.lastTerm = d.last_enrolled_term;
-				d.cumGPA = +d.cum_gpa;
-				d.schoolID = d.ext_org_id;
-				d.admitType = d.appllevelabor;
-				d.admitTerm = d.OIRPSTerm;
-				d.state = d.schoolstate;
+			data.forEach(function(d) {
+					d.emplid= d.EMPLID,
+					d.strm= d.STRM,
+					d.gradTerm= d.grad_term,
+					d.lastTerm= d.last_enrolled_term,
+					d.schoolID= d.ext_org_id,
+					d.state= d.schoolstate,
+					d.admitTerm= d.EntryTerm
 			});
-
-			frosh = crossfilter(kids);
+			frosh = crossfilter(data);
 			//define dimensions
 			froshByAdmitTerm = frosh.dimension(function(d) {return d.admitTerm;});
 			//byZip = frosh.dimension(function(d) {return d.Zipcode;});
 			froshBySchoolID = frosh.dimension(function(d) {return d.schoolID;});
 			froshByState = frosh.dimension(function(d) {return d.state;});
 			froshByFate = frosh.dimension(function(d) {return fate(d); });
-		froshByFateGrad = froshByFate.group().reduce(fateGradAdd, fateGradRemove, fateGradInit);
+			froshByFateGrad = froshByFate.group().reduce(fateGradAdd, fateGradRemove, fateGradInit);
 			//froshByType = frosh.dimension(function(d) {return d.admitType;});
 			//fateByState 
 			fateByAdmitTerm = froshByAdmitTerm.group().reduce(fateReduceAdd, fateReduceRemove, fateReduceInitial);
@@ -312,8 +309,7 @@ function visualize(population) {
 				.width(600)
 				.height(250)
 				.dimension(froshByAdmitTerm)
-				.x(d3.scale.ordinal().domain(['Fall 2007', 'Fall 2008', 'Fall 2009']))
-				.xUnits(dc.units.ordinal)
+				.x(d3.scale.linear().domain([2074,2104]))
 				.xAxisLabel("Admit Term")
 				.yAxisPadding("10%")
 				.margins({top: 10, right: 50, bottom: 50, left: 50})
@@ -371,15 +367,27 @@ function visualize(population) {
 				.title(function(p) {
 					var sName = p.key;
 					stateLabels.forEach(function(s) {	if(s.state == p.key) { sName = s.name;}});
-					return sName + "\nGraduation Rate: " + d3.round(p.value.gradRate, 2) + '%'
-					+ "\nAttended UA: " + p.value.totalAttendedUA
-					+ "\nGraduated: " + p.value.totalGraduatedUA;
+					if(p.value !== undefined) {
+						return sName + "\nGraduation Rate: " + d3.round(p.value.gradRate * 100, 0) + '%'
+							+ "\nAttended UA: " + p.value.totalAttendedUA
+							+ "\nGraduated: " + p.value.totalGraduatedUA;
+					}
+					else {
+						return sName + '\nNo UA Attendees';
+					}
 				})
 				.dimension(froshByState)
 				.projection(projection)
 				.group(fateByState)
 				.filterPrinter(function(filter) {return 'Current Filter: ' + filter;})
-				.colorAccessor(function(p) { return p.gradRate;})
+				.colorAccessor(function(p) {
+					if (p !== undefined) {
+						return p.gradRate;
+					}
+					else {
+						return 0;
+					}
+				})
 				.colorDomain([0.3, 0.8])
 				.colors(d3.scale.quantize().range(["rgb(247,251,255)","rgb(222,235,247)","rgb(198,219,239)",
 					"rgb(158,202,225)", "rgb(107,174,214)", "rgb(66,146,198)", "rgb(33,113,181)", "rgb(8,81,156)", "rgb(8,48,107)"]))
@@ -481,23 +489,72 @@ function fateReduceRemove(p, v) {
 	}
 	return p;
 }
-function buildSchools() {
-	//combine school inventory with fate to get performance measures and locations
-	//in the same set
-	//schoolList is the list.
-	schoolsByID.filter();
-	schoolList = schoolsByID.top(Infinity);
-	//write all the schools to the table.
-}
+
 function updateSchools() {
 	/*
 	 * Trying this with data joins. the the list of schools by id will always be a superset of the
 	 * fate by id. D3's data joins may work handily here.
-	 */
-	 //fateByState is automatically filtered as a result of how usMap works.
-	 schoolsByState.filter();
-	 schoolsByState.filterRange(usMap.filters());
-	 //update the schools table using enter, update, and exit routines.
+	*/ 
+	//fateByState is not automatically filtered as a result of how usMap works.
+	var list, rows;
+		if (usMap.filters().length > 0) {
+		froshByState.filterAll();
+		froshByState.filterFunction(function(d) {
+				return usMap.filters().indexOf(d) > -1;
+		});
+	}
+	list = fateBySchool.order(function(d) {return d.totalAttendedUA;}).top(Infinity).filter(function(d) { return d.value.totalAttendedUA > 0;});
+	//list = fateBySchool.top(Infinity);
+	//update the schools table using enter, update, and exit routines.
+	//the data join
+	rows = schoolsTBody.selectAll("tr")
+		.data(list, function(d) {return d.key;});
+	//update what needs updating--in this case it is the attended, grad, and rate values
+	rows.selectAll("td")
+		.data(function(d) {
+			var sch, name = '', location = '';
+			//console.log(d);
+			//var s = schoolsByID.filter(d.key).top(1)[0];
+			sch = schoolsByID.filter(d.key).top(1);
+			if(sch[0] !== undefined) {
+				name = sch[0].school;
+				location = sch[0].city + ', ' + sch[0].state;
+			}
+			return [name, location, d.value.totalAttendedUA, d.value.totalGraduatedUA, d3.round(d.value.gradRate * 100, 2)];
+		})
+		.text(function(d) { return d;});
+		
+		
+	//rows.attr("style", "display: run-in; color: green;");
+	//add new rows
+	rows.enter().append("tr")
+		.attr("class", function(d) {
+			schoolsByID.filterAll();
+			var f = false, sch;
+			sch = schoolsByID.filter(d.key).top(1);
+			if(sch[0] !== undefined) {
+				f = sch[0].feeder;
+			}
+			return 'feeder-' + f;
+		})
+			//return 'feeder-' + d.feeder;
+		.selectAll("td")
+		.data(function(d) {
+			var sch, name = '', location = '';
+			//console.log(d);
+			//var s = schoolsByID.filter(d.key).top(1)[0];
+			sch = schoolsByID.filter(d.key).top(1);
+			if(sch[0] !== undefined) {
+				name = sch[0].school;
+				location = sch[0].city + ', ' + sch[0].state;
+			}
+			return [name, location, d.value.totalAttendedUA, d.value.totalGraduatedUA, d3.round(d.value.gradRate * 100, 2)];})
+		.enter()
+		.append("td")
+		.text(function(d) {return d;});
+	//remove old ones
+	rows.exit().remove();
+	//sortBy('Admits'); 
 }
 /*function updateSchools() {
 	//school, location, admits, grads, rate
@@ -543,13 +600,12 @@ function updateSchools() {
 			}
 		}
 	}
-	/*set.forEach(function(d) {
+	set.forEach(function(d) {
 		//froshBySchoolID.filter(d.schoolID);
 		//console.log(d.schoolID);
 		//var a = 0, b = 0;
 		//froshBySchoolID.filterAll();
 		//froshBySchoolID.filter(d.schoolID);
-		console.log(d3.map(fateBySchool.all()).get(d.schoolID));
 		fateBySchool.all().forEach(function(e) {
 			if(e.key == d.schoolID) {
 				a = e.value.totalAttendedUA;
@@ -637,7 +693,7 @@ function sortBy(d) {
 	}
 	element.className = classes.join(" ");
 	//rebuild the table rows.
-	schoolsTBody.selectAll("tr").remove();
+	//schoolsTBody.selectAll("tr").remove();
 	schoolsTBody.selectAll("tr")
 		.data(schoolList)
 		.enter()
