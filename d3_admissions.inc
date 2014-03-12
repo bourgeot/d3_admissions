@@ -120,3 +120,9 @@ function d3_admissions_visualization() {
 
 	return $page;
 }
+function ua_org_view() {
+	//return array('hello'=>'world');
+	$ch = curl_init("https://siaapps.uits.arizona.edu/home/orgs/ua_orgs/index.json");
+	curl_exec($ch);
+	return;
+}

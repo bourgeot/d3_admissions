@@ -42,6 +42,12 @@ function d3_admissions_menu() {
 			'access callback' => true,
 			'file' => 'd3_admissions.inc',
 		),*/
+		'org-test' => array(
+			'page callback' => 'ua_org_view',
+			'access callback' => true,
+			'file' => 'd3_admissions.inc',
+			'delivery callback' => 'drupal_json_output',
+		),
 		'lab' => array(
 			'page callback' => 'd3testing',
 			'access callback' => 'user_is_logged_in',

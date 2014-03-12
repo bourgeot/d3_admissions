@@ -88,11 +88,11 @@ container = d3.select(rootContainer)
 container.append("strong")
 	.attr("class", "chart-title")
 	.text("Headcount by Admit Term ");
-container.append("span").attr("class", "headcount-filter filter");
+//container.append("span").attr("class", "headcount-filter filter");
 container.append("a")
 	.attr("class", "reset")
-	.text('Reset All')
-	.attr("href", 'javascript:dc.filterAll();dc.redrawAll();')
+	.text('reset')
+	.attr("href", 'javascript:admitTermRowChart.filterAll();dc.redrawAll();')
 	.attr("style", 'display: none;');	
 container.append("div").attr("class", "clearfix");
 admitTermRowChart = dc.rowChart("#headcount");	
@@ -105,7 +105,7 @@ container = d3.select(rootContainer)
 container.append("strong")
 	.attr("class", "chart-title")
 	.text("Outcomes: Where are they Now? ");
-container.append("span").attr("class", "fate-filter filter");
+//container.append("span").attr("class", "fate-filter filter");
 container.append("a")
 	.attr("class", "reset")
 	.text(' reset')
@@ -121,7 +121,11 @@ container = d3.select(dataContainer)
 	.attr("id", "schools");
 container.append("strong")
 	.attr("class", "chart-title table-title")
-	.text("School Performance: Nationwide");
+	.text("School Performance");
+container.append("a")
+	.attr("class", "reset")
+	.text(' Reset All')
+	.attr("href", 'javascript:dc.filterAll();froshBySchoolID.filter();dc.redrawAll();');
 var tColumns = ['[*]','School', 'Location', 'Admits', 'Grads', 'Rate'];
 var schoolsTable = container.append("table");
 schoolsTable.append("caption").text("(UA partner schools appear in bold face)");
@@ -159,7 +163,7 @@ container.append("strong")
 	.attr("class", "chart-title")
 	.text("Graduation Rates By State ");
 container.append("span").attr("class", "note").text("(hover to see summary statistics, click to filter.)");
-container.append("span").attr("class", "state-filter filter");
+//container.append("span").attr("class", "state-filter filter");
 container.append("a")
 	.attr("class", "reset")
 	.text(' reset')
@@ -794,6 +798,7 @@ function termLabeler(term) {
 	}
 }
 function filterSchool() {
+	var others = d3.selectAll('tr.checked');
 	var row = d3.select(this.parentElement);
 	//visual feedback.
 	if(row.classed('checked')) {
@@ -803,9 +808,13 @@ function filterSchool() {
 		dc.redrawAll();
 	}
 	else {
+		others
+			.classed({'checked':false})
+			.selectAll("input")
+				.property('checked', false);
 		row.classed({'checked':true});
 		row.select("input").property('checked', true);
-		console.log(row.data()[0].key);
+		//console.log(row.data()[0].key);
 		froshBySchoolID.filter(row.data()[0].key);
 		dc.redrawAll();
 	}
